@@ -20,8 +20,10 @@
   "license": "Apache-2.0",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "serve": "vite preview"
+    "start": "vite",
+    "build": "vite build --outDir dist --base './'",
+    "test": "tsc --no-emit",
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@types/google.maps": "^3.48.5",
