@@ -5,119 +5,163 @@
  */
 
 import {
-  AmbientLight,
-  DirectionalLight,
-  Matrix4,
-  PerspectiveCamera,
-  Scene,
-  WebGLRenderer,
+    AmbientLight,
+    DirectionalLight,
+    Matrix4,
+    PerspectiveCamera,
+    Scene,
+    WebGLRenderer,
 } from "three";
+import {Easing, Tween, update} from "@tweenjs/tween.js";
 
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+
+import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 
 let map: google.maps.Map;
 
 const mapOptions = {
-  tilt: 0,
-  heading: 0,
-  zoom: 18,
-  center: { lat: 40.343899, lng: -74.660049 },
-  mapId: "95303993b7018d90",
-  // disable interactions due to animation loop and moveCamera
-  disableDefaultUI: true,
-  gestureHandling: "none",
-  keyboardShortcuts: false,
+    tilt: 0,
+    heading: 0,
+    zoom: 18,
+    center: {lat: 40.343899, lng: -74.660049},
+    mapId: "95303993b7018d90",
+    // disable interactions due to animation loop and moveCamera
+    disableDefaultUI: true,
+    gestureHandling: "none",
+    keyboardShortcuts: false,
 };
 
 function initMap(): void {
-  const mapDiv = document.getElementById("map") as HTMLElement;
-  map = new google.maps.Map(mapDiv, mapOptions);
-  initWebglOverlayView(map);
+    const mapDiv = document.getElementById("map") as HTMLElement;
+    map = new google.maps.Map(mapDiv, mapOptions);
+    initWebglOverlayView(map);
+
+    const buttons: [string, string, number, google.maps.ControlPosition][] = [
+        ["Rotate Left", "rotate", 20, google.maps.ControlPosition.LEFT_CENTER],
+        ["Rotate Right", "rotate", -20, google.maps.ControlPosition.RIGHT_CENTER],
+        ["Tilt Down", "tilt", 20, google.maps.ControlPosition.TOP_CENTER],
+        ["Tilt Up", "tilt", -20, google.maps.ControlPosition.BOTTOM_CENTER],
+    ];
+
+    buttons.forEach(([text, mode, amount, position]) => {
+        const controlDiv = document.createElement("div");
+        const controlUI = document.createElement("button");
+
+        controlUI.classList.add("ui-button");
+        controlUI.innerText = `${text}`;
+        controlUI.addEventListener("click", () => {
+            adjustMap(mode, amount);
+        });
+        controlDiv.appendChild(controlUI);
+        map.controls[position].push(controlDiv);
+    });
+
+    const adjustMap = function (mode: string, amount: number) {
+        switch (mode) {
+            case "tilt":
+                map.setTilt(map.getTilt()! + amount);
+                break;
+            case "rotate":
+                map.setHeading(map.getHeading()! + amount);
+                break;
+            default:
+                break;
+        }
+    };
+
 }
 
 function initWebglOverlayView(map: google.maps.Map): void {
-  let scene, renderer, camera, loader;
-  const webglOverlayView = new google.maps.WebGLOverlayView();
+    let scene, renderer, camera, loader;
+    const webglOverlayView = new google.maps.WebGLOverlayView();
 
-  webglOverlayView.onAdd = () => {
-    // Set up the scene.
+    webglOverlayView.onAdd = () => {
+        // Set up the scene.
 
-    scene = new Scene();
+        scene = new Scene();
 
-    camera = new PerspectiveCamera();
+        camera = new PerspectiveCamera();
 
-    const ambientLight = new AmbientLight(0xffffff, 0.75); // Soft white light.
-    scene.add(ambientLight);
+        const ambientLight = new AmbientLight(0xffffff, 0.75); // Soft white light.
+        scene.add(ambientLight);
 
-    const directionalLight = new DirectionalLight(0xffffff, 0.25);
-    directionalLight.position.set(0.5, -1, 0.5);
-    scene.add(directionalLight);
+        const directionalLight = new DirectionalLight(0xffffff, 0.25);
+        directionalLight.position.set(0.5, -1, 0.5);
+        scene.add(directionalLight);
 
-    // Load the model.
-    loader = new GLTFLoader();
-    const source =
-      "https://raw.githubusercontent.com/googlemaps/js-samples/main/assets/pin.gltf";
-    loader.load(source, (gltf) => {
-      gltf.scene.scale.set(10, 10, 10);
-      gltf.scene.rotation.x = Math.PI; // Rotations are in radians.
-      scene.add(gltf.scene);
-    });
-  };
+        // Load the model.
+        loader = new GLTFLoader();
+        const source =
+            "https://raw.githubusercontent.com/googlemaps/js-samples/main/assets/pin.gltf";
+        loader.load(source, (gltf) => {
+            gltf.scene.scale.set(10, 10, 10);
+            gltf.scene.rotation.x = Math.PI; // Rotations are in radians.
+            scene.add(gltf.scene);
+        });
+    };
 
-  webglOverlayView.onContextRestored = ({ gl }) => {
-    // Create the js renderer, using the
-    // maps's WebGL rendering context.
-    renderer = new WebGLRenderer({
-      canvas: gl.canvas,
-      context: gl,
-      ...gl.getContextAttributes(),
-    });
-    renderer.autoClear = false;
+    webglOverlayView.onContextRestored = ({gl}) => {
+        // Create the js renderer, using the
+        // maps's WebGL rendering context.
+        renderer = new WebGLRenderer({
+            canvas: gl.canvas,
+            context: gl,
+            ...gl.getContextAttributes(),
+        });
+        renderer.autoClear = false;
 
-    // Wait to move the camera until the 3D model loads.
-    loader.manager.onLoad = () => {
-      renderer.setAnimationLoop(() => {
+        // Wait to move the camera until the 3D model loads.
+        // loader.manager.onLoad = () => {
+        //
+        //     renderer.setAnimationLoop(() => {
+        //         webglOverlayView.requestRedraw();
+        //         const {tilt, heading, zoom} = mapOptions;
+        //         map.moveCamera({tilt, heading, zoom});
+        //
+        //         // // Rotate the map 360 degrees.
+        //         // if (mapOptions.tilt < 67.5) {
+        //         //     mapOptions.tilt += 0.5;
+        //         // } else if (mapOptions.heading <= 360) {
+        //         //     mapOptions.heading += 0.2;
+        //         //     mapOptions.zoom -= 0.0005;
+        //         // } else {
+        //         //     renderer.setAnimationLoop(null);
+        //         // }
+        //
+        //         // Rotate the map 360 degrees.
+        //         if (mapOptions.tilt < 67.5) {
+        //             mapOptions.tilt += 0.5;
+        //         } else {
+        //             renderer.setAnimationLoop(null);
+        //         }
+        //     });
+        // };
+    };
+
+    webglOverlayView.onDraw = ({gl, transformer}): void => {
+        const latLngAltitudeLiteral: google.maps.LatLngAltitudeLiteral = {
+            lat: mapOptions.center.lat,
+            lng: mapOptions.center.lng,
+            altitude: 100,
+        };
+
+        // Update camera matrix to ensure the model is georeferenced correctly on the map.
+        const matrix = transformer.fromLatLngAltitude(latLngAltitudeLiteral);
+        camera.projectionMatrix = new Matrix4().fromArray(matrix);
+
         webglOverlayView.requestRedraw();
-        const { tilt, heading, zoom } = mapOptions;
-        map.moveCamera({ tilt, heading, zoom });
+        renderer.render(scene, camera);
 
-        // Rotate the map 360 degrees.
-        if (mapOptions.tilt < 67.5) {
-          mapOptions.tilt += 0.5;
-        } else if (mapOptions.heading <= 360) {
-          mapOptions.heading += 0.2;
-          mapOptions.zoom -= 0.0005;
-        } else {
-          renderer.setAnimationLoop(null);
-        }
-      });
+        // Sometimes it is necessary to reset the GL state.
+        renderer.resetState();
     };
-  };
-
-  webglOverlayView.onDraw = ({ gl, transformer }): void => {
-    const latLngAltitudeLiteral: google.maps.LatLngAltitudeLiteral = {
-      lat: mapOptions.center.lat,
-      lng: mapOptions.center.lng,
-      altitude: 100,
-    };
-
-    // Update camera matrix to ensure the model is georeferenced correctly on the map.
-    const matrix = transformer.fromLatLngAltitude(latLngAltitudeLiteral);
-    camera.projectionMatrix = new Matrix4().fromArray(matrix);
-
-    webglOverlayView.requestRedraw();
-    renderer.render(scene, camera);
-
-    // Sometimes it is necessary to reset the GL state.
-    renderer.resetState();
-  };
-  webglOverlayView.setMap(map);
+    webglOverlayView.setMap(map);
 }
 
 declare global {
-  interface Window {
-    initMap: () => void;
-  }
+    interface Window {
+        initMap: () => void;
+    }
 }
 window.initMap = initMap;
 export {};
