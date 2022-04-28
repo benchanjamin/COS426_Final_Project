@@ -20,7 +20,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "dev": "vite",
-    "start": "vite --port $PORT",
+    "start": "vite",
     "build": "vite build --outDir dist --base './'",
     "test": "tsc --no-emit",
     "preview": "vite preview"

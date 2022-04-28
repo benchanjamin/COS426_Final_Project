@@ -20,21 +20,21 @@ import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 let map: google.maps.Map;
 
 const mapOptions = {
-    tilt: 0,
+    tilt: 90,
     heading: 0,
     zoom: 18,
     center: {lat: 40.343899, lng: -74.660049},
     mapId: "95303993b7018d90",
     // disable interactions due to animation loop and moveCamera
     disableDefaultUI: true,
-    gestureHandling: "none",
+    gestureHandling: "greedy",
     keyboardShortcuts: false,
 };
 
 function initMap(): void {
     const mapDiv = document.getElementById("map") as HTMLElement;
     map = new google.maps.Map(mapDiv, mapOptions);
-    initWebglOverlayView(map);
+
 
     const buttons: [string, string, number, google.maps.ControlPosition][] = [
         ["Rotate Left", "rotate", 20, google.maps.ControlPosition.LEFT_CENTER],
@@ -68,7 +68,7 @@ function initMap(): void {
                 break;
         }
     };
-
+    initWebglOverlayView(map);
 }
 
 function initWebglOverlayView(map: google.maps.Map): void {
@@ -111,31 +111,32 @@ function initWebglOverlayView(map: google.maps.Map): void {
         renderer.autoClear = false;
 
         // Wait to move the camera until the 3D model loads.
-        // loader.manager.onLoad = () => {
-        //
-        //     renderer.setAnimationLoop(() => {
-        //         webglOverlayView.requestRedraw();
-        //         const {tilt, heading, zoom} = mapOptions;
-        //         map.moveCamera({tilt, heading, zoom});
-        //
-        //         // // Rotate the map 360 degrees.
-        //         // if (mapOptions.tilt < 67.5) {
-        //         //     mapOptions.tilt += 0.5;
-        //         // } else if (mapOptions.heading <= 360) {
-        //         //     mapOptions.heading += 0.2;
-        //         //     mapOptions.zoom -= 0.0005;
-        //         // } else {
-        //         //     renderer.setAnimationLoop(null);
-        //         // }
-        //
-        //         // Rotate the map 360 degrees.
-        //         if (mapOptions.tilt < 67.5) {
-        //             mapOptions.tilt += 0.5;
-        //         } else {
-        //             renderer.setAnimationLoop(null);
-        //         }
-        //     });
-        // };
+        loader.manager.onLoad = () => {
+
+            renderer.setAnimationLoop(() => {
+                webglOverlayView.requestRedraw();
+                const {tilt, heading, zoom} = mapOptions;
+                map.moveCamera({tilt, heading, zoom});
+
+                // // Rotate the map 360 degrees.
+                // if (mapOptions.tilt < 67.5) {
+                //     mapOptions.tilt += 0.5;
+                // } else if (mapOptions.heading <= 360) {
+                //     mapOptions.heading += 0.2;
+                //     mapOptions.zoom -= 0.0005;
+                // } else {
+                //     renderer.setAnimationLoop(null);
+                // }
+
+
+                // Rotate the map 360 degrees.
+                // if (mapOptions.tilt < 67.5) {
+                //     mapOptions.tilt  = 90;
+                // } else {
+                    renderer.setAnimationLoop(null);
+                // }
+            });
+        };
     };
 
     webglOverlayView.onDraw = ({gl, transformer}): void => {
