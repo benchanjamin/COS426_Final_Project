@@ -27,7 +27,7 @@ const mapOptions = {
     mapId: "95303993b7018d90",
     // disable interactions due to animation loop and moveCamera
     disableDefaultUI: true,
-    gestureHandling: "greedy",
+    // gestureHandling: "greedy",
     keyboardShortcuts: false,
     clickableIcons: false,
     streetViewControl: false,
@@ -40,14 +40,19 @@ function initMap(): void {
 
 
     document.addEventListener('keydown', function (event) {
+        const amount = 10;
         if (event.code == 'ArrowLeft')
-            adjustMap("rotate", -1);
+            adjustMap("rotate", -amount);
         if (event.code == 'ArrowRight')
-            adjustMap("rotate", 1);
+            adjustMap("rotate", amount);
         if (event.code == 'ArrowDown')
-            adjustMap("move", 2);
+            adjustMap("move", amount);
         if (event.code == 'ArrowUp')
-            adjustMap("move", -2);
+            adjustMap("move", -amount);
+        if (event.code == 'ArrowDown' && event.shiftKey)
+            adjustMap("tilt", amount);
+        if (event.code == 'ArrowUp' && event.shiftKey)
+            adjustMap("tilt", -amount);
     });
 
     const adjustMap = function (mode: string, amount: number) {
