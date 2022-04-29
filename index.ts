@@ -21,7 +21,7 @@ let map: google.maps.Map;
 
 const mapOptions = {
     tilt: 90,
-    heading: 0,
+    heading: 180,
     zoom: 18,
     center: {lat: 40.343899, lng: -74.660049},
     mapId: "95303993b7018d90",
@@ -29,6 +29,9 @@ const mapOptions = {
     disableDefaultUI: true,
     gestureHandling: "greedy",
     keyboardShortcuts: false,
+    clickableIcons: false,
+    streetViewControl: false,
+    fullscreenControl: false,
 };
 
 function initMap(): void {
@@ -36,33 +39,32 @@ function initMap(): void {
     map = new google.maps.Map(mapDiv, mapOptions);
 
 
-    const buttons: [string, string, number, google.maps.ControlPosition][] = [
-        ["Rotate Left", "rotate", 20, google.maps.ControlPosition.LEFT_CENTER],
-        ["Rotate Right", "rotate", -20, google.maps.ControlPosition.RIGHT_CENTER],
-        ["Tilt Down", "tilt", 20, google.maps.ControlPosition.TOP_CENTER],
-        ["Tilt Up", "tilt", -20, google.maps.ControlPosition.BOTTOM_CENTER],
-    ];
-
-    buttons.forEach(([text, mode, amount, position]) => {
-        const controlDiv = document.createElement("div");
-        const controlUI = document.createElement("button");
-
-        controlUI.classList.add("ui-button");
-        controlUI.innerText = `${text}`;
-        controlUI.addEventListener("click", () => {
-            adjustMap(mode, amount);
-        });
-        controlDiv.appendChild(controlUI);
-        map.controls[position].push(controlDiv);
+    document.addEventListener('keydown', function (event) {
+        if (event.code == 'ArrowLeft')
+            adjustMap("rotate", -1);
+        if (event.code == 'ArrowRight')
+            adjustMap("rotate", 1);
+        if (event.code == 'ArrowDown')
+            adjustMap("move", 2);
+        if (event.code == 'ArrowUp')
+            adjustMap("move", -2);
     });
 
     const adjustMap = function (mode: string, amount: number) {
+        function degrees_to_radians(degrees) {
+            const pi = Math.PI;
+            return degrees * (pi / 180);
+        }
+
         switch (mode) {
             case "tilt":
                 map.setTilt(map.getTilt()! + amount);
                 break;
             case "rotate":
                 map.setHeading(map.getHeading()! + amount);
+                break;
+            case "move":
+                map.panBy(0, amount);
                 break;
             default:
                 break;
@@ -133,7 +135,7 @@ function initWebglOverlayView(map: google.maps.Map): void {
                 // if (mapOptions.tilt < 67.5) {
                 //     mapOptions.tilt  = 90;
                 // } else {
-                    renderer.setAnimationLoop(null);
+                renderer.setAnimationLoop(null);
                 // }
             });
         };
