@@ -60,11 +60,11 @@ npm start
 
 There are three main files for this sample:
 
-*   <walkthrough-editor-open-file filePath="index.ts">src/index.ts</walkthrough-editor-open-file>
+*   <walkthrough-editor-open-file filePath="index.js">src/index.js</walkthrough-editor-open-file>
 *   <walkthrough-editor-open-file filePath="index.html">src/index.html</walkthrough-editor-open-file>
 *   <walkthrough-editor-open-file filePath="style.css">src/style.css</walkthrough-editor-open-file>
 
-Try editing the <walkthrough-editor-open-file filePath="index.ts">src/index.ts</walkthrough-editor-open-file> file and see how the web application in the web preview immediately reloads with the changes.
+Try editing the <walkthrough-editor-open-file filePath="index.js">src/index.js</walkthrough-editor-open-file> file and see how the web application in the web preview immediately reloads with the changes.
 
 ## Conclusion
 
