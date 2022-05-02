@@ -13,8 +13,8 @@ import {
     WebGLRenderer,
     Raycaster,
 } from "three";
-import {Easing, Tween, update} from "@tweenjs/tween.js";
 import ThreejsOverlayView from '@ubilabs/threejs-overlay-view';
+import {Vector2} from 'three';
 import {Mesh, MeshStandardMaterial, BoxGeometry} from 'three';
 
 
@@ -22,6 +22,8 @@ import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import ThreeJSOverlayView from "@ubilabs/threejs-overlay-view";
 
 let map: google.maps.Map;
+
+const mousePosition = new Vector2();
 
 const mapOptions = {
     tilt: 90,
@@ -38,20 +40,24 @@ const mapOptions = {
     fullscreenControl: false,
 };
 
-const VIEW_PARAMS = {
-    center: {
-        lat: 40.343899,
-        lng: -74.660049
-    },
-    tilt: 67.5,
-    heading: 60,
-    zoom: 18
-};
-
 function initMap(): void {
     const mapDiv = document.getElementById("map") as HTMLElement;
     map = new google.maps.Map(mapDiv, mapOptions);
 
+    map.addListener('mousemove', ev => {
+        const {domEvent} = ev;
+        const {left, top, width, height} = mapDiv.getBoundingClientRect();
+
+        const x = domEvent.clientX - left;
+        const y = domEvent.clientY - top;
+
+        mousePosition.x = 2 * (x / width) - 1;
+        mousePosition.y = 1 - 2 * (y / height);
+
+        // since the actual raycasting is happening in the update function,
+        // we have to make sure that it will be called for the next frame.
+        overlay.requestRedraw();
+    });
 
     document.addEventListener('keydown', function (event) {
         const amount = 10;
@@ -85,20 +91,55 @@ function initMap(): void {
         }
     };
 
+    // This is the start of overlay functions
+    const VIEW_PARAMS = {
+        center: {
+            lat: 40.343899,
+            lng: -74.660049
+        },
+        tilt: 67.5,
+        heading: 60,
+        zoom: 18
+    };
+
+
     const overlay = new ThreeJSOverlayView({
         ...VIEW_PARAMS.center
     });
 
-    const scene = overlay.getScene();
-    const cube = new Mesh(
-        new BoxGeometry(20, 20, 20),
-        new MeshStandardMaterial({color: 0xff0000})
-    );
+    overlay.onAdd = () => {
+        const scene = overlay.getScene();
+        const cube = new Mesh(
+            new BoxGeometry(20, 20, 20),
+            new MeshStandardMaterial({color: 0xff0000})
+        );
 
-    const cubeLocation = {...VIEW_PARAMS.center, altitude: 50};
-    overlay.latLngAltToVector3(cubeLocation, cube.position);
+        const cubeLocation = {...VIEW_PARAMS.center, altitude: 50};
+        overlay.latLngAltToVector3(cubeLocation, cube.position);
 
-    scene.add(cube);
+        scene.add(cube);
+    }
+
+    const DEFAULT_COLOR = 0xffffff;
+    const HIGHLIGHT_COLOR = 0x00ff00;
+
+    let highlightedObject = null;
+
+    overlay.update = () => {
+        const intersections = overlay.raycast(mousePosition);
+        if (highlightedObject) {
+            // @ts-ignore
+            highlightedObject.material.color.setHex(DEFAULT_COLOR);
+        }
+
+        if (intersections.length === 0) return;
+
+        highlightedObject = intersections[0].object;
+        // @ts-ignore
+        highlightedObject.material.color.setHex(HIGHLIGHT_COLOR);
+    };
+
+
     overlay.setMap(map);
 }
 
