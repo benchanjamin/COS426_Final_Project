@@ -33,6 +33,7 @@
   "private": true,
   "dependencies": {
     "@tweenjs/tween.js": "^18.6.4",
+    "@ubilabs/threejs-overlay-view": "^0.7.1",
     "three": "^0.139.2"
   }
 }
