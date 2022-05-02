@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import {Fox} from './components/objects';
-import {Vector2} from 'three';
+import {Vector2, Vector3} from 'three';
 import {Mesh, MeshStandardMaterial, BoxGeometry} from 'three';
 import ThreeJSOverlayView from "@ubilabs/threejs-overlay-view";
 import * as Dat from 'dat.gui';
@@ -62,7 +62,7 @@ function initMap() {
 
         // const cube = new Mesh(new BoxGeometry(20, 20, 20), new MeshStandardMaterial({color: 0xff0000}));
         const fox = new Fox(this);
-        const foxLocation = {...VIEW_PARAMS.center, altitude: 50};
+        const foxLocation = {...VIEW_PARAMS.center, altitude: 20};
         // overlay.latLngAltToVector3(cubeLocation, cube.position);
         overlay.latLngAltToVector3(foxLocation, fox.position);
         // scene.add(cube);
@@ -85,12 +85,27 @@ function initMap() {
                 adjustMap("rotate", -amount);
             if (event.code == 'ArrowRight')
                 adjustMap("rotate", amount);
-            if (event.code == 'ArrowDown')
+            if (event.code == 'ArrowDown') {
                 adjustMap("move", amount);
-            if (event.code == 'ArrowUp')
+                overlay.latLngAltToVector3({
+                    lat: map.getCenter().lat(),
+                    lng: map.getCenter().lng(),
+                    altitude: 20
+                }, fox.position);
+                fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading());
+            }
+            if (event.code == 'ArrowUp') {
                 adjustMap("move", -amount);
-            if (event.code == 'ArrowDown' && event.shiftKey)
+                overlay.latLngAltToVector3({
+                    lat: map.getCenter().lat(),
+                    lng: map.getCenter().lng(),
+                    altitude: 20
+                }, fox.position);
+                fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() - 180);
+            }
+            if (event.code == 'ArrowDown' && event.shiftKey) {
                 adjustMap("tilt", amount);
+            }
             if (event.code == 'ArrowUp' && event.shiftKey)
                 adjustMap("tilt", -amount);
         });
@@ -116,8 +131,8 @@ function initMap() {
     let highlightedObject = null;
 
     overlay.update = () => {
-        $(window).keydown(function(e){
-            if(e.code == 'ArrowUp' || e.code == 'ArrowDown'){
+        $(window).keydown(function (e) {
+            if (e.code == 'ArrowUp' || e.code == 'ArrowDown') {
                 for (const obj of this.state.updateList) {
                     obj.update();
                     overlay.requestRedraw();
@@ -139,6 +154,13 @@ function initMap() {
 
     overlay.setMap(map);
 
+}
+
+class helperFunctions {
+    static degrees_to_radians(degrees) {
+        let pi = Math.PI;
+        return degrees * (pi / 180);
+    }
 }
 
 window.initMap = initMap;

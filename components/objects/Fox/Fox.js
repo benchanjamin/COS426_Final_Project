@@ -3,6 +3,13 @@ import {Group, Int8Attribute} from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {update} from "@tweenjs/tween.js";
 
+class helperFunctions {
+    static degrees_to_radians(degrees) {
+        let pi = Math.PI;
+        return degrees * (pi / 180);
+    }
+}
+
 class Fox extends Group {
     constructor(parent) {
         // Call parent Group() constructor
@@ -34,8 +41,11 @@ class Fox extends Group {
             fox.state.clips = fox.state.model.animations;
 
             this.add(gltf.scene);
-            this.scale.set(.05, .05, .05);
-            this.translateX(2);
+            this.scale.set(.5, .5, .5);
+            this.rotation.x = (helperFunctions.degrees_to_radians(90));
+            this.rotation.y = helperFunctions.degrees_to_radians( -180)
+            // this.rotateY(helperFunctions.degrees_to_radians(180));
+            // this.translateX(2);
             console.log("loaded");
         });
         // Add self to parent's update list
