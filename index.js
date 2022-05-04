@@ -9,11 +9,32 @@ import {Mesh, MeshStandardMaterial, BoxGeometry} from 'three';
 import ThreeJSOverlayView from "@ubilabs/threejs-overlay-view";
 import * as Dat from 'dat.gui';
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
+import {random} from "gsap/gsap-core";
 
 
 let map;
-let markers = [];
+let coords = [
+    {lat: 40.343976045616934, lng: -74.65633457372397},
+    {lat: 40.34759851090708, lng: -74.65444991836445},
+    {lat: 40.349153790790474, lng: -74.65177169580478},
+    {lat: 40.34668462786897, lng: -74.65361797205118},
+    {lat: 40.350711753138256, lng: -74.65050890117351},
+    {lat: 40.34579955055668, lng: -74.65236397231686},
+    {lat: 40.34478352718533, lng: -74.65610057205218}
+];
+let locationNames = [
+    'Butler College',
+    'Campus Club',
+    'Carl A. Fields Center',
+    'Center for Jewish Life',
+    'EQuad',
+    'Fine Hall',
+    'First College'
+]
+let mainCharacter;
+let currentMarker = null;
 const mousePosition = new Vector2();
+let score = 0;
 const mapOptions = {
     tilt: 90,
     heading: 180,
@@ -53,12 +74,12 @@ function initMap() {
         zoom: 21
     };
 
-
     const gameInfoDiv = document.createElement("div");
-    const score = document.createElement("button");
-    score.classList.add("ui-box");
-    score.innerText = `Score: 0`;
-    gameInfoDiv.appendChild(score);
+    const scoreText = document.createElement("button");
+    scoreText.classList.add("ui-box");
+    scoreText.setAttribute('id', 'score');
+    scoreText.innerText = `Score: ${score}`;
+    gameInfoDiv.appendChild(scoreText);
     map.controls[google.maps.ControlPosition.TOP_CENTER].push(gameInfoDiv);
 
 
@@ -70,8 +91,8 @@ function initMap() {
     overlay.onAdd = () => {
 
 
-        let mainCharacter = helperFunctions.spawnMainCharacter(overlay)
-        helperFunctions.spawnFiveMarkers(overlay);
+        mainCharacter = helperFunctions.spawnMainCharacter(overlay)
+        helperFunctions.spawnMarker(overlay);
 
         map.addListener('mousemove', ev => {
             const {domEvent} = ev;
@@ -113,7 +134,7 @@ function initMap() {
                     lat: map.getCenter().lat(),
                     lng: map.getCenter().lng(),
                     altitude: 0
-                }, fox.position);
+                }, mainCharacter.position);
                 mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading());
             }
             if (event.code == 'ArrowUp' && !event.shiftKey) {
@@ -125,7 +146,7 @@ function initMap() {
                         lng: 0,
                         altitude: 0
                     };
-                    overlay.vector3ToLatLngAlt(fox.position, setLatLngAlt)
+                    overlay.vector3ToLatLngAlt(mainCharacter.position, setLatLngAlt)
                     map.setCenter(setLatLngAlt);
                     map.setZoom(21);
                 }
@@ -178,6 +199,13 @@ function initMap() {
             }
         }
 
+        if (currentMarker !== null && helperFunctions.distanceVector2D(mainCharacter.position, currentMarker.position) < 20) {
+            helperFunctions.updateScore();
+            helperFunctions.spawnMarker(overlay);
+            console.log('close to marker');
+        }
+
+
         const intersections = overlay.raycast(mousePosition);
         if (highlightedObject) {
             highlightedObject.material.color.setHex(DEFAULT_COLOR);
@@ -213,21 +241,44 @@ class helperFunctions {
         return mainCharacter;
     }
 
-    static spawnFiveMarkers(overlay) {
-        let coords = [{lat: 40.343976045616934, lng: -74.65633457372397}, {
-            lat: 40.34759851090708,
-            lng: -74.65444991836445
-        },
-            {lat: 40.349153790790474, lng: -74.65177169580478}, {lat: 40.34668462786897, lng: -74.65361797205118},
-            {lat: 40.350711753138256, lng: -74.65050890117351}]
-        for (let i = 0; i < coords.length; i++) {
-            let marker = new Marker(window);
-            markers.push(marker);
-            let location = {...coords[i], altitude: 50}
+    static spawnMarker(overlay) {
+        if (currentMarker !== null) {
             let scene = overlay.getScene();
-            overlay.latLngAltToVector3(location, marker.position);
-            scene.add(marker);
+            scene.remove(currentMarker);
         }
+
+        let randomIndex = Math.floor(Math.random() * coords.length)
+
+        // randomly choose a coordinate from coordinates list
+        let marker = new Marker(window);
+        marker.name = locationNames[randomIndex];
+
+        // set marker location
+        let markerLocation = {...coords[randomIndex], altitude: 40}
+        overlay.latLngAltToVector3(markerLocation, marker.position);
+
+        // remove element from both lists using splice
+        coords.splice(randomIndex, 1);
+        locationNames.splice(randomIndex, 1);
+
+        // add to scene
+        let scene = overlay.getScene();
+        scene.add(marker);
+
+        // add to global scope
+        currentMarker = marker;
+    }
+
+    static distanceVector2D(v1, v2) {
+        let dx = v1.x - v2.x;
+        let dy = v1.y - v2.y;
+
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    static updateScore() {
+        score += 1;
+        $("#score").text("Score: " + score);
     }
 }
 
