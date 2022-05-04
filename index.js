@@ -16,7 +16,7 @@ const mousePosition = new Vector2();
 const mapOptions = {
     tilt: 90,
     heading: 180,
-    zoom: 18,
+    zoom: 21,
     center: {lat: 40.343899, lng: -74.660049},
     mapId: "95303993b7018d90",
     // disable interactions due to animation loop and moveCamera
@@ -48,9 +48,9 @@ function initMap() {
             lat: map.getCenter().lat(),
             lng: map.getCenter().lng()
         },
-        tilt: 67.5,
+        tilt: 90,
         heading: 60,
-        zoom: 18
+        zoom: 21
     };
 
 
@@ -99,9 +99,11 @@ function initMap() {
             const amount = 10;
             if (event.code == 'ArrowLeft')
                 adjustMap("rotate", -amount);
+                fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
             if (event.code == 'ArrowRight')
                 adjustMap("rotate", amount);
-            if (event.code == 'ArrowDown') {
+                fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
+            if (event.code == 'ArrowDown' && !event.shiftKey) {
                 let mapCenterVector3 = new Vector3();
                 overlay.latLngAltToVector3({lat: map.getCenter().lat(), lng: map.getCenter().lng()}, mapCenterVector3);
                 if (Math.abs((mapCenterVector3.x - fox.position.x) ** 2 + (mapCenterVector3.y - fox.position.y) ** 2) > 0) {
@@ -119,11 +121,11 @@ function initMap() {
                 overlay.latLngAltToVector3({
                     lat: map.getCenter().lat(),
                     lng: map.getCenter().lng(),
-                    altitude: 20
+                    altitude: 0
                 }, fox.position);
                 fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading());
             }
-            if (event.code == 'ArrowUp') {
+            if (event.code == 'ArrowUp' && !event.shiftKey) {
                 let mapCenterVector3 = new Vector3();
                 overlay.latLngAltToVector3({lat: map.getCenter().lat(), lng: map.getCenter().lng()}, mapCenterVector3);
                 if (Math.abs((mapCenterVector3.x - fox.position.x) ** 2 + (mapCenterVector3.y - fox.position.y) ** 2) > 0) {
@@ -140,7 +142,7 @@ function initMap() {
                 overlay.latLngAltToVector3({
                     lat: map.getCenter().lat(),
                     lng: map.getCenter().lng(),
-                    altitude: 20
+                    altitude: 0
                 }, fox.position);
                 fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() - 180);
             }

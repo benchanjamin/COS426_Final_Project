@@ -51,9 +51,9 @@ class Fox extends Group {
 
         document.addEventListener('keydown', function(event){
             if (event.code == 'ArrowLeft')
-                state.mesh.rotation.y += 0.25;
+                // state.mesh.rotation.y += 0.25;
             if (event.code == 'ArrowRight')
-                state.mesh.rotation.y -= 0.25;
+                // state.mesh.rotation.y -= 0.25;
             if (event.code == 'ArrowUp'){
                 state.mesh.position.z += 1;
                 state.action = "Walk"
