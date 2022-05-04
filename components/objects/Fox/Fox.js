@@ -11,6 +11,7 @@ class Fox extends Group {
         // Init state
         this.state = {
             gui: new Dat.GUI(),
+            name: null,
             model: null,
             animation: null,
             mixer: null,
@@ -21,16 +22,14 @@ class Fox extends Group {
 
         };
 
-        this.name = 'fox';
-        var state = this.state;
-        var gui = this.state.gui;
+        let state = this.state;
+        state.name = 'fox';
+        let gui = this.state.gui;
 
-        var fox = this;
+        let fox = this;
         const loader = new GLTFLoader();
         const source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Fox/glTF/Fox.gltf";
         loader.load(source, (gltf) => {
-            console.log(gltf);
-
             //Create animation mixer and clips to run later
             fox.state.model = gltf;
             fox.state.mesh = gltf.scene;

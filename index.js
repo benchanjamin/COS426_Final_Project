@@ -3,7 +3,7 @@
  * Copyright 2021 Google LLC.
  * SPDX-License-Identifier: Apache-2.0
  */
-import {Fox} from './components/objects';
+import {Fox, Marker} from './components/objects';
 import {Vector2, Vector3} from 'three';
 import {Mesh, MeshStandardMaterial, BoxGeometry} from 'three';
 import ThreeJSOverlayView from "@ubilabs/threejs-overlay-view";
@@ -11,7 +11,8 @@ import * as Dat from 'dat.gui';
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
 
 
-let map, fox, loader;
+let map;
+let markers = [];
 const mousePosition = new Vector2();
 const mapOptions = {
     tilt: 90,
@@ -30,20 +31,19 @@ const mapOptions = {
 
 function initMap() {
 
-
-    this.state = {
+    window.state = {
         gui: new Dat.GUI(),
         updateList: [],
     }
 
-    this.addToUpdateList = (object) => {
+    window.addToUpdateList = (object) => {
         this.state.updateList.push(object);
     }
 
     const mapDiv = document.getElementById("map");
     map = new google.maps.Map(mapDiv, mapOptions);
 
-    const VIEW_PARAMS = {
+    window.VIEW_PARAMS = {
         center: {
             lat: map.getCenter().lat(),
             lng: map.getCenter().lng()
@@ -54,6 +54,14 @@ function initMap() {
     };
 
 
+    const gameInfoDiv = document.createElement("div");
+    const score = document.createElement("button");
+    score.classList.add("ui-box");
+    score.innerText = `Score: 0`;
+    gameInfoDiv.appendChild(score);
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(gameInfoDiv);
+
+
     // This is the start of overlay functions
     const overlay = new ThreeJSOverlayView({
         ...VIEW_PARAMS.center
@@ -61,28 +69,9 @@ function initMap() {
 
     overlay.onAdd = () => {
 
-        const scene = overlay.getScene();
 
-        // const cube = new Mesh(new BoxGeometry(20, 20, 20), new MeshStandardMaterial({color: 0xff0000}));
-        fox = new Fox(this);
-        const foxLocation = {...VIEW_PARAMS.center, altitude: 20};
-        fox.scale.set(0.5, 0.5, 0.5);
-        fox.rotation.x = (helperFunctions.degrees_to_radians(90));
-        fox.rotation.y = helperFunctions.degrees_to_radians(-180);
-        // overlay.latLngAltToVector3(foxLocation, fox.position);
-        scene.add(fox);
-
-        loader = new GLTFLoader();
-        const source =
-            "https://raw.githubusercontent.com/googlemaps/js-samples/main/assets/pin.gltf";
-        loader.load(source, (gltf) => {
-            // Butler College Coords
-            let commonCoords = {lat: 40.343976045616934, lng: -74.65633457372397};
-            gltf.scene.scale.set(10, 10, 10);
-            gltf.scene.rotation.x = Math.PI; // Rotations are in radians.
-            overlay.latLngAltToVector3(gltf.scene.location, gltf.scene.location)
-            scene.add(gltf.scene);
-        });
+        let mainCharacter = helperFunctions.spawnMainCharacter(overlay)
+        helperFunctions.spawnFiveMarkers(overlay);
 
         map.addListener('mousemove', ev => {
             const {domEvent} = ev;
@@ -101,37 +90,36 @@ function initMap() {
             const amountMove = 30;
             if (event.code == 'ArrowLeft')
                 adjustMap("rotate", -amountRotate);
-                fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
+            mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
             if (event.code == 'ArrowRight')
                 adjustMap("rotate", amountRotate);
-                fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
+            mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
             if (event.code == 'ArrowDown' && !event.shiftKey) {
                 let mapCenterVector3 = new Vector3();
                 overlay.latLngAltToVector3({lat: map.getCenter().lat(), lng: map.getCenter().lng()}, mapCenterVector3);
-                if (Math.abs((mapCenterVector3.x - fox.position.x) ** 2 + (mapCenterVector3.y - fox.position.y) ** 2) > 0) {
+                if (Math.abs((mapCenterVector3.x - mainCharacter.position.x) ** 2 + (mapCenterVector3.y - mainCharacter.position.y) ** 2) > 0) {
                     let setLatLng = {
                         lat: 0,
                         lng: 0,
                         altitude: 0
                     };
-                    overlay.vector3ToLatLngAlt(fox.position, setLatLng)
+                    overlay.vector3ToLatLngAlt(mainCharacter.position, setLatLng)
                     map.setCenter(setLatLng);
                     map.setZoom(21);
                 }
-                fox.state.action = "Run";
+                mainCharacter.state.action = "Run";
                 adjustMap("move", amountMove);
-                // map.center = fox.position;
                 overlay.latLngAltToVector3({
                     lat: map.getCenter().lat(),
                     lng: map.getCenter().lng(),
                     altitude: 0
                 }, fox.position);
-                fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading());
+                mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading());
             }
             if (event.code == 'ArrowUp' && !event.shiftKey) {
                 let mapCenterVector3 = new Vector3();
                 overlay.latLngAltToVector3({lat: map.getCenter().lat(), lng: map.getCenter().lng()}, mapCenterVector3);
-                if (Math.abs((mapCenterVector3.x - fox.position.x) ** 2 + (mapCenterVector3.y - fox.position.y) ** 2) > 0) {
+                if (Math.abs((mapCenterVector3.x - mainCharacter.position.x) ** 2 + (mapCenterVector3.y - mainCharacter.position.y) ** 2) > 0) {
                     let setLatLngAlt = {
                         lat: 0,
                         lng: 0,
@@ -141,14 +129,14 @@ function initMap() {
                     map.setCenter(setLatLngAlt);
                     map.setZoom(21);
                 }
-                fox.state.action = "Run";
+                mainCharacter.state.action = "Run";
                 adjustMap("move", -amountMove);
                 overlay.latLngAltToVector3({
                     lat: map.getCenter().lat(),
                     lng: map.getCenter().lng(),
                     altitude: 0
-                }, fox.position);
-                fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() - 180);
+                }, mainCharacter.position);
+                mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() - 180);
             }
             if (event.code == 'ArrowDown' && event.shiftKey) {
                 adjustMap("tilt", amountTilt);
@@ -177,31 +165,18 @@ function initMap() {
     const DEFAULT_COLOR = 0xffffff;
     const HIGHLIGHT_COLOR = 0x00ff00;
     let highlightedObject = null;
+    let animationRunning = true;
 
     overlay.update = () => {
 
-        if (true) {
+        if (animationRunning) {
             for (const obj of this.state.updateList) {
-                obj.update();
-                overlay.requestRedraw();
+                if (typeof obj.update !== 'undefined') {
+                    obj.update();
+                    overlay.requestRedraw();
+                }
             }
         }
-
-
-        // if (true) {
-        //     for (const obj of this.state.updateList) {
-        //         obj.update();
-        //         overlay.requestRedraw();
-        //     }
-        // }
-
-        // if (fox.state.action === "Survey") {
-        //     for (const obj of this.state.updateList) {
-        //         obj.update();
-        //         overlay.requestRedraw();
-        //     }
-        // }
-
 
         const intersections = overlay.raycast(mousePosition);
         if (highlightedObject) {
@@ -223,6 +198,36 @@ class helperFunctions {
     static degrees_to_radians(degrees) {
         let pi = Math.PI;
         return degrees * (pi / 180);
+    }
+
+    static spawnMainCharacter(overlay) {
+        const scene = overlay.getScene();
+        let mainCharacter = new Fox(window);
+        const mainCharacterLocation = {...window.VIEW_PARAMS.center, altitude: 0};
+        mainCharacter.scale.set(0.5, 0.5, 0.5);
+        mainCharacter.rotation.x = (helperFunctions.degrees_to_radians(90));
+        mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-180);
+        overlay.latLngAltToVector3(mainCharacterLocation, mainCharacter.position);
+        scene.add(mainCharacter);
+
+        return mainCharacter;
+    }
+
+    static spawnFiveMarkers(overlay) {
+        let coords = [{lat: 40.343976045616934, lng: -74.65633457372397}, {
+            lat: 40.34759851090708,
+            lng: -74.65444991836445
+        },
+            {lat: 40.349153790790474, lng: -74.65177169580478}, {lat: 40.34668462786897, lng: -74.65361797205118},
+            {lat: 40.350711753138256, lng: -74.65050890117351}]
+        for (let i = 0; i < coords.length; i++) {
+            let marker = new Marker(window);
+            markers.push(marker);
+            let location = {...coords[i], altitude: 50}
+            let scene = overlay.getScene();
+            overlay.latLngAltToVector3(location, marker.position);
+            scene.add(marker);
+        }
     }
 }
 
