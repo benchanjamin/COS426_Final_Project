@@ -1,14 +1,7 @@
 import * as THREE from 'three';
-import {Group, Int8Attribute} from 'three';
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
-import {update} from "@tweenjs/tween.js";
-
-class helperFunctions {
-    static degrees_to_radians(degrees) {
-        let pi = Math.PI;
-        return degrees * (pi / 180);
-    }
-}
+import { Group, Int8Attribute } from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import * as Dat from 'dat.gui';
 
 class Fox extends Group {
     constructor(parent) {
@@ -17,19 +10,22 @@ class Fox extends Group {
 
         // Init state
         this.state = {
-            gui: parent.state.gui,
+            gui: new Dat.GUI(),
             model: null,
             animation: null,
             mixer: null,
             clips: null,
-            action: "Run",
-            survey: true
+            // Can select Survey Run or Walk
+            action: "Survey",
+            speed: 1
 
         };
 
         this.name = 'fox';
+        var state = this.state;
+        var gui = this.state.gui;
 
-        let fox = this;
+        var fox = this;
         const loader = new GLTFLoader();
         const source = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Fox/glTF/Fox.gltf";
         loader.load(source, (gltf) => {
@@ -37,37 +33,77 @@ class Fox extends Group {
 
             //Create animation mixer and clips to run later
             fox.state.model = gltf;
-            fox.state.mixer = new THREE.AnimationMixer(gltf.scene);
+            fox.state.mesh = gltf.scene;
+            fox.state.mixer = new THREE.AnimationMixer( gltf.scene );
             fox.state.clips = fox.state.model.animations;
 
             this.add(gltf.scene);
-            this.scale.set(.5, .5, .5);
-            this.rotation.x = (helperFunctions.degrees_to_radians(90));
-            this.rotation.y = helperFunctions.degrees_to_radians( -180)
-            // this.rotateY(helperFunctions.degrees_to_radians(180));
+            this.scale.set(.05,.05,.05);
             // this.translateX(2);
             console.log("loaded");
         });
+
+        gui.add(state, 'action', [ 'Walk', 'Run', 'Survey'] ).onChange(function (value) {
+            state.mixer.stopAllAction();
+            state.action = value;
+        });
+
+
+        document.addEventListener('keydown', function(event){
+            if (event.code == 'ArrowLeft')
+                state.mesh.rotation.y += 0.25;
+            if (event.code == 'ArrowRight')
+                state.mesh.rotation.y -= 0.25;
+            if (event.code == 'ArrowUp'){
+                state.mesh.position.z += 1;
+                state.action = "Walk"
+            }
+            if (event.code == 'ArrowDown'){
+                state.mesh.position.z -= 1;
+                state.action = "Walk"
+            }
+        });
+
+        document.addEventListener('keyup', function(event){
+            if (event.code == 'ArrowUp')
+                state.mixer.stopAllAction();
+            state.action = "Survey"
+            if (event.code == 'ArrowDown')
+                state.mixer.stopAllAction();
+            state.action = "Survey"
+        });
+
+
+        /*gui.add(state, 'speed', [0], [5] ).onChange(function (value) {
+            state.mixer.stopAllAction();
+            state.action = value;
+        });*/
+
         // Add self to parent's update list
         parent.addToUpdateList(this);
 
         // Populate GUI
-        this.state.gui.add(this.state, 'survey');
+        //this.customGuiStuff = this.state.gui.add(this.state, 'action');
     }
 
-    update = (timeStamp, bool) => {
-        if (this.state.model != null) {
-            if (this.state.action == "Run") {
+    update(timeStamp){
+        if (this.state.model != null){
+            if (this.state.action == "Run"){
                 this.state.mixer.update(.03);
-            } else {
-                this.state.mixer.update(.01)
-            }
-            const clip = THREE.AnimationClip.findByName(this.state.model, this.state.action);
-            const action = this.state.mixer.clipAction(clip);
+            }else{this.state.mixer.update(.01)}
+            var clip = THREE.AnimationClip.findByName( this.state.model, this.state.action );
+            var action = this.state.mixer.clipAction( clip );
             action.play();
-            return true;
         }
     }
+
+
+
+    cleanUp() {
+        //this.state.gui.remove(this.customGuiStuff);
+        this.state.gui.destroy();
+    }
+
 
 
 }

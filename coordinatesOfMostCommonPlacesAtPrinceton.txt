@@ -1,0 +1,31 @@
+    if (value === 'Butler College') {
+        commonCoords = {lat: 40.343976045616934, lng: -74.65633457372397};
+    } else if (value === 'Campus Club') {
+        commonCoords = {lat: 40.34759851090708, lng: -74.65444991836445};
+    } else if (value === 'Carl A. Fields Center') {
+        commonCoords = {lat: 40.349153790790474, lng: -74.65177169580478};
+    } else if (value === 'Center for Jewish Life') {
+        commonCoords = {lat: 40.34668462786897, lng: -74.65361797205118};
+    } else if (value === 'EQuad') {
+        commonCoords = {lat: 40.350711753138256, lng: -74.65050890117351};
+    } else if (value === 'Fine Hall') {
+        commonCoords = {lat: 40.34579955055668, lng: -74.65236397231686};
+    } else if (value === 'First College') {
+        commonCoords = {lat: 40.34478352718533, lng: -74.65610057205218};
+    } else if (value === 'Friend Center') {
+        commonCoords = {lat: 40.35030090667399, lng: -74.65274518999759};
+    } else if (value === 'Frist Campus Center') {
+        commonCoords = {lat: 40.34691702328191, lng: -74.65530646968027};
+    } else if (value === 'Green Hall') {
+        commonCoords = {lat: 40.34956080912481, lng: -74.65595567330864};
+    } else if (value === 'Lewis Library') {
+        commonCoords = {lat: 40.34610602786555, lng: -74.65264530091227};
+    } else if (value === 'Mathey College') {
+        commonCoords = {lat: 40.347777407020686, lng: -74.66143412554321};
+    } else if (value === 'Murray-Dodge Hall') {
+        commonCoords = {lat: 40.34796187587709, lng: -74.65781638535157};
+    } else if (value === 'Rocky College') {
+        commonCoords = {lat: 40.348501551479494, lng: -74.66218745569728};
+    } else if (value === 'Whitman College') {
+        commonCoords = {lat: 40.34415029916429, lng: -74.65822212183382};
+    }
