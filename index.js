@@ -17,7 +17,7 @@ const mapOptions = {
     tilt: 90,
     heading: 180,
     zoom: 21,
-    center: {lat: 40.343899, lng: -74.660049},
+    center: {lat: 40.34691702328191, lng: -74.65530646968027},
     mapId: "95303993b7018d90",
     // disable interactions due to animation loop and moveCamera
     disableDefaultUI: true,
@@ -96,12 +96,14 @@ function initMap() {
             overlay.requestRedraw();
         });
         document.addEventListener('keydown', function (event) {
-            const amount = 10;
+            const amountTilt = 10;
+            const amountRotate = 10;
+            const amountMove = 30;
             if (event.code == 'ArrowLeft')
-                adjustMap("rotate", -amount);
+                adjustMap("rotate", -amountRotate);
                 fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
             if (event.code == 'ArrowRight')
-                adjustMap("rotate", amount);
+                adjustMap("rotate", amountRotate);
                 fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
             if (event.code == 'ArrowDown' && !event.shiftKey) {
                 let mapCenterVector3 = new Vector3();
@@ -114,9 +116,10 @@ function initMap() {
                     };
                     overlay.vector3ToLatLngAlt(fox.position, setLatLng)
                     map.setCenter(setLatLng);
+                    map.setZoom(21);
                 }
                 fox.state.action = "Run";
-                adjustMap("move", amount);
+                adjustMap("move", amountMove);
                 // map.center = fox.position;
                 overlay.latLngAltToVector3({
                     lat: map.getCenter().lat(),
@@ -136,9 +139,10 @@ function initMap() {
                     };
                     overlay.vector3ToLatLngAlt(fox.position, setLatLngAlt)
                     map.setCenter(setLatLngAlt);
+                    map.setZoom(21);
                 }
                 fox.state.action = "Run";
-                adjustMap("move", -amount);
+                adjustMap("move", -amountMove);
                 overlay.latLngAltToVector3({
                     lat: map.getCenter().lat(),
                     lng: map.getCenter().lng(),
@@ -147,10 +151,10 @@ function initMap() {
                 fox.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() - 180);
             }
             if (event.code == 'ArrowDown' && event.shiftKey) {
-                adjustMap("tilt", amount);
+                adjustMap("tilt", amountTilt);
             }
             if (event.code == 'ArrowUp' && event.shiftKey) {
-                adjustMap("tilt", -amount);
+                adjustMap("tilt", -amountTilt);
             }
         });
         const adjustMap = function (mode, amount) {
