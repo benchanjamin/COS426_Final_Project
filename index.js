@@ -34,7 +34,8 @@ let locationNames = [
 let mainCharacter;
 let currentMarker = null;
 const mousePosition = new Vector2();
-let score = 0;
+let currentScore = 0;
+let currentBuilding = null;
 const mapOptions = {
     tilt: 90,
     heading: 180,
@@ -42,12 +43,13 @@ const mapOptions = {
     center: {lat: 40.34691702328191, lng: -74.65530646968027},
     mapId: "95303993b7018d90",
     // disable interactions due to animation loop and moveCamera
-    disableDefaultUI: true,
+    disableDefaultUI: false,
     gestureHandling: "greedy",
     keyboardShortcuts: false,
     clickableIcons: false,
     streetViewControl: true,
     fullscreenControl: false,
+    // mapTypeId: 'satellite'
 };
 
 function initMap() {
@@ -74,13 +76,22 @@ function initMap() {
         zoom: 21
     };
 
-    const gameInfoDiv = document.createElement("div");
+
+    const scoreDiv = document.createElement("div");
     const scoreText = document.createElement("button");
     scoreText.classList.add("ui-box");
     scoreText.setAttribute('id', 'score');
-    scoreText.innerText = `Score: ${score}`;
-    gameInfoDiv.appendChild(scoreText);
-    map.controls[google.maps.ControlPosition.TOP_CENTER].push(gameInfoDiv);
+    scoreText.innerText = `Score: ${currentScore}`;
+    scoreDiv.appendChild(scoreText);
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(scoreDiv);
+
+    const buildingDiv = document.createElement("div");
+    const building = document.createElement("button");
+    building.classList.add("ui-box");
+    building.setAttribute('id', 'building');
+    building.innerText = `Go to default`;
+    buildingDiv.appendChild(building);
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(buildingDiv);
 
 
     // This is the start of overlay functions
@@ -92,7 +103,6 @@ function initMap() {
 
 
         mainCharacter = helperFunctions.spawnMainCharacter(overlay)
-        helperFunctions.spawnMarker(overlay);
 
         map.addListener('mousemove', ev => {
             const {domEvent} = ev;
@@ -126,7 +136,6 @@ function initMap() {
                     };
                     overlay.vector3ToLatLngAlt(mainCharacter.position, setLatLng)
                     map.setCenter(setLatLng);
-                    map.setZoom(21);
                 }
                 mainCharacter.state.action = "Run";
                 adjustMap("move", amountMove);
@@ -148,7 +157,6 @@ function initMap() {
                     };
                     overlay.vector3ToLatLngAlt(mainCharacter.position, setLatLngAlt)
                     map.setCenter(setLatLngAlt);
-                    map.setZoom(21);
                 }
                 mainCharacter.state.action = "Run";
                 adjustMap("move", -amountMove);
@@ -199,12 +207,14 @@ function initMap() {
             }
         }
 
+        if (currentMarker === null && $("#building").text() === "Go to default") {
+            helperFunctions.spawnMarker(overlay);
+        }
+
         if (currentMarker !== null && helperFunctions.distanceVector2D(mainCharacter.position, currentMarker.position) < 20) {
             helperFunctions.updateScore();
             helperFunctions.spawnMarker(overlay);
-            console.log('close to marker');
         }
-
 
         const intersections = overlay.raycast(mousePosition);
         if (highlightedObject) {
@@ -257,16 +267,25 @@ class helperFunctions {
         let markerLocation = {...coords[randomIndex], altitude: 40}
         overlay.latLngAltToVector3(markerLocation, marker.position);
 
-        // remove element from both lists using splice
-        coords.splice(randomIndex, 1);
-        locationNames.splice(randomIndex, 1);
-
         // add to scene
         let scene = overlay.getScene();
         scene.add(marker);
 
         // add to global scope
         currentMarker = marker;
+
+        // add to building name
+        currentBuilding = marker.name;
+        if (locationNames.length > 0) {
+            $("#building").text("Go to " + marker.name);
+        }
+        else {
+            $("building").text("Congrats, you found all the buildings!")
+        }
+
+        // remove element from both lists using splice
+        coords.splice(randomIndex, 1);
+        locationNames.splice(randomIndex, 1);
     }
 
     static distanceVector2D(v1, v2) {
@@ -277,8 +296,8 @@ class helperFunctions {
     }
 
     static updateScore() {
-        score += 1;
-        $("#score").text("Score: " + score);
+        currentScore += 1;
+        $("#score").text("Score: " + currentScore);
     }
 }
 
