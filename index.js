@@ -118,7 +118,7 @@ function initMap() {
         document.addEventListener('keydown', function (event) {
             const amountTilt = 10;
             const amountRotate = 10;
-            const amountMove = 30;
+            const amountMove = 0.00003;
             if (event.code == 'ArrowLeft')
                 adjustMap("rotate", -amountRotate);
             mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
@@ -145,6 +145,7 @@ function initMap() {
                     altitude: 0
                 }, mainCharacter.position);
                 mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading());
+                // mainCharacter.translateX(-4);
             }
             if (event.code == 'ArrowUp' && !event.shiftKey) {
                 let mapCenterVector3 = new Vector3();
@@ -183,7 +184,13 @@ function initMap() {
                     map.setHeading(map.getHeading() + amount);
                     break;
                 case "move":
-                    map.panBy(0, amount);
+                    map.panTo({
+                        lat: map.getCenter().lat() + amount *
+                            Math.sin(helperFunctions.degrees_to_radians(-map.getHeading() - 90)),
+                        lng: map.getCenter().lng() + amount *
+                            Math.cos(helperFunctions.degrees_to_radians(-map.getHeading() - 90))
+                    });
+                    // console.log(-map.getHeading() - 90);
                     break;
                 default:
                     break;
@@ -278,8 +285,7 @@ class helperFunctions {
         currentBuilding = marker.name;
         if (locationNames.length > 0) {
             $("#building").text("Go to " + marker.name);
-        }
-        else {
+        } else {
             $("#building").text("Congrats, you found all the buildings!")
         }
 
