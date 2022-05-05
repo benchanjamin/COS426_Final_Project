@@ -3,6 +3,7 @@
   "clean_urls": true,
   "routes": {
     "/**": "index.html",
-    "/assets/*": "/assets/"
+    "/assets/*": "/assets/",
+    "/components/objects/Marker/GLTF format": "/assets/components/objects/Marker/GLTF format"
   }
 }
