@@ -73,7 +73,7 @@ const mapOptions = {
 function initMap() {
 
     window.state = {
-        gui: new Dat.GUI(),
+        //gui: new Dat.GUI(),
         updateList: [],
     }
 
@@ -100,6 +100,7 @@ function initMap() {
     scoreText.classList.add("ui-box");
     scoreText.setAttribute('id', 'score');
     scoreText.innerText = `Score: ${currentScore}`;
+    // scoreText.setAttribute('style', '');
     scoreDiv.appendChild(scoreText);
     map.controls[google.maps.ControlPosition.TOP_CENTER].push(scoreDiv);
 
@@ -107,6 +108,7 @@ function initMap() {
     const building = document.createElement("button");
     building.classList.add("ui-box");
     building.setAttribute('id', 'building');
+    // building.setAttribute('style', '');
     building.innerText = `Go to default`;
     buildingDiv.appendChild(building);
     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(buildingDiv);

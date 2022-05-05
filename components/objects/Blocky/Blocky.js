@@ -51,6 +51,7 @@ class Blocky extends Group {
         // Init state
         this.state = {
             gui: new Dat.GUI(),
+            pause: true,
             parent: parent,
             running: false,
             headMesh: null,
@@ -99,25 +100,15 @@ class Blocky extends Group {
         // used within GUI calls
         var OG = this;
 
-        gui.add(options, "exportMeshNow").onChange((value) => {
-            options.exportMeshNow = value;
-            if (options.exportMeshNow == true) {
-                OG.export()
-            }
-        });
+        // gui.add(options, "exportMeshNow").onChange((value) => {
+        //     options.exportMeshNow = value;
+        //     if (options.exportMeshNow == true) {
+        //         OG.export()
+        //     }
+        // });
 
-        gui.add(settings, 'animationType', ['Bounce', 'Run', 'Walk', 'Dance']).onChange(function (value) {
-            OG.state.parent.remove(OG.group);
-            //OG.params = OG.state.settings.originalParams;
-            OG.arms = [];
-            OG.legs = [];
-            OG.state.settings.animationType = value;
-            //console.log(value);
-            //gsap.killTweensOf(OG.params);
-
-            OG.init()
-            // after changes complete
-            OG.state.parent.add(OG.group);
+        gui.add(options, 'pause').onChange(function (value) {
+           options.pause = value;
         });
 
         // gui.add(options, "materialOptions").onChange((value) => {

@@ -12,12 +12,13 @@ class Fox extends Group {
         this.state = {
             // gui: new Dat.GUI(),
             name: '',
+            internalCounter: 0,
             model: null,
             animation: null,
             mixer: null,
             clips: null,
             // Can select Survey Run or Walk
-            action: "Survey",
+            action: "Walk",
             speed: 1
 
         };

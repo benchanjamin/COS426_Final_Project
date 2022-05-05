@@ -17,7 +17,7 @@ body {
 }
 
 .ui-button {
-  background-color: #fff;
+  background-color: #f58025;
   border: 0;
   border-radius: 2px;
   box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
@@ -30,7 +30,7 @@ body {
 }
 
 .ui-box {
-  background-color: #fff;
+  background-color: #f58025;
   border: 0;
   border-radius: 2px;
   box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
@@ -41,6 +41,6 @@ body {
   height: 40px;
 }
 
-/*.ui-button:hover {*/
-/*  background: rgb(235, 235, 235);*/
-/*}*/
+.ui-box:hover {
+  background: rgb(235, 235, 235);
+}
