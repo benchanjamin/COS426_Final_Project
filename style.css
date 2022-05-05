@@ -42,5 +42,6 @@ body {
 }
 
 .ui-box:hover {
-  background: rgb(235, 235, 235);
+  background: rgb(0, 0, 0);
+  color: #ebebeb;
 }
