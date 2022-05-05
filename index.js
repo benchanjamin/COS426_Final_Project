@@ -14,7 +14,6 @@ import * as Dat from 'dat.gui';
 
 
 let map;
-let pause = false;
 let coords = [
     {lat: 40.343976045616934, lng: -74.65633457372397},
     {lat: 40.34759851090708, lng: -74.65444991836445},
