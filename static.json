@@ -4,6 +4,6 @@
   "routes": {
     "/**": "index.html",
     "/assets/*": "/assets/",
-    "/components/objects/Marker/GLTF format": "/assets/components/objects/Marker/GLTF format"
+    "/components/objects/Marker/GLTF format/*": "/assets/components/objects/Marker/GLTF format/"
   }
 }
