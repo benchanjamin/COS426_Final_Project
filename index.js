@@ -118,7 +118,7 @@ function initMap() {
         document.addEventListener('keydown', function (event) {
             const amountTilt = 10;
             const amountRotate = 10;
-            const amountMove = 0.00003;
+            const amountMove = 10;
             if (event.code == 'ArrowLeft')
                 adjustMap("rotate", -amountRotate);
             mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
