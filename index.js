@@ -228,7 +228,7 @@ function initMap() {
                     altitude: 0
                 }, targetPosition);
 
-                let differenceVector = targetPosition.sub(mainCharacter.position);
+                let differenceVector = targetPosition.sub(mainCharacter.group.position);
                 let blender = 1 / 60.0;
                 let towardMove = differenceVector.multiplyScalar(blender)
 
@@ -297,7 +297,7 @@ function initMap() {
             helperFunctions.spawnMarker(overlay);
         }
 
-        if (currentMarker !== null && helperFunctions.distanceVector2D(mainCharacter.position, currentMarker.position) < 20) {
+        if (currentMarker !== null && helperFunctions.distanceVector2D(mainCharacter.group.position, currentMarker.position) < 20) {
             helperFunctions.updateScore();
             helperFunctions.spawnMarker(overlay);
         }
