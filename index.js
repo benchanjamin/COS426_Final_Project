@@ -455,11 +455,6 @@ class helperFunctions {
         adversary.rotation.y = (Math.random() - 0.5) * helperFunctions.degrees_to_radians(-180);
         overlay.latLngAltToVector3(adversaryLocation, adversary.position);
 
-        // if (currentMarker !== null) {
-        //     // walk towards current marker
-        //     // let scene = overlay.getScene();
-        //     //scene.remove(currentMarker);
-        // }
         scene.add(adversary);
 
         return adversary;
