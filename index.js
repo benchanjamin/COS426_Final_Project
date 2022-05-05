@@ -280,7 +280,7 @@ class helperFunctions {
             $("#building").text("Go to " + marker.name);
         }
         else {
-            $("building").text("Congrats, you found all the buildings!")
+            $("#building").text("Congrats, you found all the buildings!")
         }
 
         // remove element from both lists using splice
