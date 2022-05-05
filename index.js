@@ -335,6 +335,31 @@ class helperFunctions {
         return mainCharacter;
     }
 
+    static spawnAdversaryCharacter(overlay) {
+        const scene = overlay.getScene();
+        let adversary = new Fox(window, true);
+        adversary.userData.name = 'adversary'
+
+        const adversaryLocation = {
+            lat: map.getCenter().lat() + (Math.random() - 0.5) * 0.01,
+            lng: map.getCenter().lng() + (Math.random() - 0.5) * 0.01,
+            altitude: 0
+        };
+        adversary.scale.set(0.5, 0.5, 0.5);
+        adversary.rotation.x = (helperFunctions.degrees_to_radians(90));
+        adversary.rotation.y = (Math.random() - 0.5) * helperFunctions.degrees_to_radians(-180);
+        overlay.latLngAltToVector3(adversaryLocation, adversary.position);
+
+        if (currentMarker !== null) {
+            // walk towards current marker
+            // let scene = overlay.getScene();
+            //scene.remove(currentMarker);
+        }
+        scene.add(adversary);
+
+        return adversary;
+    }
+
     static spawnMarker(overlay) {
         if (currentMarker !== null) {
             let scene = overlay.getScene();
@@ -349,6 +374,7 @@ class helperFunctions {
 
         // set marker location
         let markerLocation = {...coords[randomIndex], altitude: 40}
+
         overlay.latLngAltToVector3(markerLocation, marker.position);
 
         // add to scene
