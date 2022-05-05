@@ -100,12 +100,12 @@ class Blocky extends Group {
         // used within GUI calls
         var OG = this;
 
-        // gui.add(options, "exportMeshNow").onChange((value) => {
-        //     options.exportMeshNow = value;
-        //     if (options.exportMeshNow == true) {
-        //         OG.export()
-        //     }
-        // });
+        gui.add(options, "exportMeshNow").onChange((value) => {
+            options.exportMeshNow = value;
+            if (options.exportMeshNow == true) {
+                OG.export()
+            }
+        });
 
         gui.add(options, 'pause').onChange(function (value) {
            options.pause = value;
