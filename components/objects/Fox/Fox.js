@@ -24,7 +24,7 @@ class Fox extends Group {
 
         let state = this.state;
         // state.name = 'fox';
-        let gui = this.state.gui;
+        // let gui = this.state.gui;
 
         let fox = this;
         const loader = new GLTFLoader();
@@ -102,7 +102,7 @@ class Fox extends Group {
 
     cleanUp() {
         //this.state.gui.remove(this.customGuiStuff);
-        this.state.gui.destroy();
+        // this.state.gui.destroy();
     }
 
 

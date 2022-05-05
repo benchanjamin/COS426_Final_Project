@@ -5,14 +5,16 @@
  */
 import {Fox, Marker, Blocky} from './components/objects';
 import {Vector2, Vector3} from 'three';
-import {Mesh, MeshStandardMaterial, BoxGeometry} from 'three';
+import {
+    AmbientLight,
+    DirectionalLight,
+} from "three";
 import ThreeJSOverlayView from "@ubilabs/threejs-overlay-view";
 import * as Dat from 'dat.gui';
-import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
-import {random} from "gsap/gsap-core";
 
 
 let map;
+let pause = false;
 let coords = [
     {lat: 40.343976045616934, lng: -74.65633457372397},
     {lat: 40.34759851090708, lng: -74.65444991836445},
@@ -115,6 +117,28 @@ function initMap() {
         ...VIEW_PARAMS.center
     });
 
+    let scene = overlay.getScene();
+    const ambientLight = new AmbientLight(0xffffff, 1); // Soft white light.
+    scene.add(ambientLight);
+
+    const directionalLight1 = new DirectionalLight(0xffffff, 0.8);
+    directionalLight1.position.set(1, -1, 2);
+    scene.add(directionalLight1);
+
+    const directionalLight2 = new DirectionalLight(0xffffff, 0.8);
+    directionalLight2.position.set(-1, 1, -2);
+    scene.add(directionalLight2);
+
+
+    const directionalLight3 = new DirectionalLight(0xffffff, 0.4);
+    directionalLight3.position.set(0, 0, -2);
+    scene.add(directionalLight3);
+
+
+    const directionalLight4 = new DirectionalLight(0xffffff, 0.4);
+    directionalLight4.position.set(0, 0, 2);
+    scene.add(directionalLight4);
+
     overlay.onAdd = () => {
 
 
@@ -173,7 +197,7 @@ function initMap() {
                 adjustMap("rotate", amountRotate);
                 // mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
             }
-            if (event.code == 'ArrowDown' && !event.shiftKey) {
+            if (event.code == 'ArrowDown' && !event.shiftKey && !mainCharacter.state.pause) {
                 let mapCenterVector3 = new Vector3();
                 let setLatLng = {
                     lat: 0,
@@ -207,7 +231,7 @@ function initMap() {
                 }
                 mainCharacter.group.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading());
             }
-            if (event.code == 'ArrowUp' && !event.shiftKey) {
+            if (event.code == 'ArrowUp' && !event.shiftKey && !mainCharacter.state.pause) {
                 let mapCenterVector3 = new Vector3();
                 let setLatLngAlt = {
                     lat: 0,
@@ -284,8 +308,8 @@ function initMap() {
     overlay.update = () => {
 
         if (animationRunning) {
-            console.log(mainCharacter.group.position);
-            console.log(mainCharacter.params);
+            // console.log(mainCharacter.group.position);
+            // console.log(mainCharacter.params);
             for (const obj of this.state.updateList) {
                 if (typeof obj.update !== 'undefined') {
                     obj.update();
@@ -298,24 +322,84 @@ function initMap() {
             helperFunctions.spawnMarker(overlay);
         }
 
-        if (currentMarker !== null && helperFunctions.distanceVector2D(mainCharacter.group.position, currentMarker.position) < 20) {
-            helperFunctions.updateScore();
+        if (currentMarker !== null && helperFunctions.distanceVector2D(mainCharacter.group.position, currentMarker.position) < 10) {
+            helperFunctions.updateScore(1);
             helperFunctions.spawnMarker(overlay);
         }
 
-        const intersections = overlay.raycast(mousePosition);
-        if (highlightedObject) {
-            highlightedObject.material.color.setHex(DEFAULT_COLOR);
+        if (currentMarker !== null && !mainCharacter.state.pause) {
+            for (const obj of this.state.updateList) {
+                if (typeof obj.update !== 'undefined' && obj.userData.name === 'adversary') {
+
+                    for (var objToCollide of this.state.updateList) {
+                        if (typeof objToCollide.update !== 'undefined' && objToCollide.userData.name === 'adversary') {
+                            if (helperFunctions.distanceVector2D(objToCollide.position, obj.position) < 16) {
+                                let diffVector = new Vector3();
+                                diffVector.subVectors(objToCollide.position, obj.position);
+                                diffVector.z = 0;
+                                diffVector.normalize().multiplyScalar(-0.25);
+                                obj.position.add(diffVector);
+
+                            }
+
+                        }
+                    }
+
+                    let diffVector = new Vector3();
+                    diffVector.subVectors(currentMarker.position, obj.position);
+                    diffVector.z = 0;
+                    diffVector.normalize();
+                    // var currCount = obj.state.internalCounter % 120;
+                    // if (currCount >= 90) {
+                    //     // reset to 0
+                    //     if (obj.state.internalCounter == 119) {
+                    //         obj.state.internalCounter = 0;
+                    //     }
+                    //     //saveStartCounter = counter
+                    //     //console.log(currCount);
+                    //     diffVector.x += (Math.random() - 0.5) * 10;
+                    //     diffVector.y += (Math.random() - 0.5) * 10;
+                    // }
+
+                    // for (let i = 1; i <= 60; i++) {
+                    //     // setTimeout(function () {
+                    //
+                    //     // }, i / 60 * 500);
+                    // }
+                    obj.position.add(diffVector.multiplyScalar(0.2));
+
+                    if (helperFunctions.distanceVector2D(currentMarker.position, obj.position) < 3) {
+                        helperFunctions.updateScore(0);
+                        helperFunctions.spawnMarker(overlay);
+                    }
+                    // obj.rotation.lookAt(currentMarker.position)
+                    // console.log(obj.position);
+                    let angle = Math.atan2(diffVector.y, diffVector.x) + helperFunctions.degrees_to_radians(90);
+                    obj.rotation.y = angle;
+                    var diffAngles = angle - obj.rotation.y;
+
+                    obj.update();
+                    overlay.requestRedraw();
+                    obj.state.internalCounter = obj.state.internalCounter + 1;
+                }
+            }
         }
-        if (intersections.length === 0)
-            return;
-        highlightedObject = intersections[0].object;
-        if (highlightedObject) {
-            console.log(highlightedObject.name);
-        }
-        if (highlightedObject.userData.name === 'adversary') {
-            highlightedObject.material.color.setHex(HIGHLIGHT_COLOR);
-        }
+
+        // const intersections = overlay.raycast(mousePosition);
+        // if (highlightedObject) {
+        //     highlightedObject.material.color.setHex(DEFAULT_COLOR);
+        // }
+        // if (intersections.length === 0)
+        //     return;
+        // highlightedObject = intersections[0].object;
+        // if (highlightedObject) {
+        //     console.log(highlightedObject.name);
+        // }
+        // if (highlightedObject.name === 'fox') {
+        //     highlightedObject.material.color.setHex(HIGHLIGHT_COLOR);
+        //     highlightedObject.position.x = 100;
+        //     console.log(highlightedObject.position)
+        // }
 
         // highlightedObject = intersections[0].object;
         // highlightedObject.material.color.setHex(HIGHLIGHT_COLOR);
@@ -369,11 +453,11 @@ class helperFunctions {
         adversary.rotation.y = (Math.random() - 0.5) * helperFunctions.degrees_to_radians(-180);
         overlay.latLngAltToVector3(adversaryLocation, adversary.position);
 
-        if (currentMarker !== null) {
-            // walk towards current marker
-            // let scene = overlay.getScene();
-            //scene.remove(currentMarker);
-        }
+        // if (currentMarker !== null) {
+        //     // walk towards current marker
+        //     // let scene = overlay.getScene();
+        //     //scene.remove(currentMarker);
+        // }
         scene.add(adversary);
 
         return adversary;
@@ -392,7 +476,7 @@ class helperFunctions {
         marker.name = locationNames[randomIndex];
 
         // set marker location
-        let markerLocation = {...coords[randomIndex], altitude: 40}
+        let markerLocation = {...coords[randomIndex], altitude: 20}
 
         overlay.latLngAltToVector3(markerLocation, marker.position);
 
@@ -408,7 +492,7 @@ class helperFunctions {
         if (locationNames.length > 0) {
             $("#building").text("Go to " + marker.name);
         } else {
-            $("#building").text("Congrats, you found all the buildings!")
+            $("#building").text("All the food has been eaten!")
         }
 
         // remove element from both lists using splice
@@ -423,8 +507,8 @@ class helperFunctions {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    static updateScore() {
-        currentScore += 1;
+    static updateScore(increment) {
+        currentScore += increment;
         $("#score").text("Score: " + currentScore);
     }
 }

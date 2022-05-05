@@ -454,7 +454,6 @@ class Blocky extends Group {
     };
 
     dance() {
-        // this.group.position.y = this.params.y;
         this.legs.forEach((leg, index) => {
             const m = index % 2 === 0 ? 1 : 0
             leg.rotation.z = this.params.legRotation + degreesToRadians(60) * m;
