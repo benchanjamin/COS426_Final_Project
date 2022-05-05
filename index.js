@@ -184,13 +184,16 @@ function initMap() {
                     map.setHeading(map.getHeading() + amount);
                     break;
                 case "move":
-                    map.panTo({
-                        lat: map.getCenter().lat() + amount *
-                            Math.sin(helperFunctions.degrees_to_radians(-map.getHeading() - 90)),
-                        lng: map.getCenter().lng() + amount *
-                            Math.cos(helperFunctions.degrees_to_radians(-map.getHeading() - 90))
-                    });
-                    // console.log(-map.getHeading() - 90);
+                    map.panBy(0, amount);
+                    // map.panTo({
+                    //     lat: map.getCenter().lat() + -amount *
+                    //         Math.sin(helperFunctions.degrees_to_radians((-map.getHeading() + 90))),
+                    //     lng: map.getCenter().lng() + -amount *
+                    //         Math.cos(helperFunctions.degrees_to_radians((-map.getHeading() + 90)))
+                    // });
+                    // console.log( Math.sin(helperFunctions.degrees_to_radians((-map.getHeading() + 90)))**2 + Math.cos(helperFunctions.degrees_to_radians((-map.getHeading() + 90)))**2);
+                    // console.log(map.getCenter().lat() + amount *
+                    //                             Math.sin(helperFunctions.degrees_to_radians(-map.getHeading() - 90)));
                     break;
                 default:
                     break;

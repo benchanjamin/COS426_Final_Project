@@ -54,12 +54,12 @@ class Fox extends Group {
             if (event.code == 'ArrowRight')
                 // state.mesh.rotation.y -= 0.25;
             if (event.code == 'ArrowUp'){
-                state.mesh.position.z += 1;
-                state.action = "Walk"
+                // state.mesh.position.z += 1;
+                // state.action = "Run"
             }
             if (event.code == 'ArrowDown'){
-                state.mesh.position.z -= 1;
-                state.action = "Walk"
+                // state.mesh.position.z -= 1;
+                // state.action = "Run"
             }
         });
 
