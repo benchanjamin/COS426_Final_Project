@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { Group, Int8Attribute } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import {Group, Int8Attribute} from 'three';
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as Dat from "dat.gui";
 
 class Marker extends Group {
@@ -12,12 +12,7 @@ class Marker extends Group {
         this.state = {
             name: null,
             model: null,
-            animation: null,
-            mixer: null,
-            clips: null,
-            // Can select Survey Run or Walk
-            action: "Survey",
-            speed: 1
+            mesh: null,
         };
 
         let state = this.state;
@@ -35,7 +30,7 @@ class Marker extends Group {
             // marker.state.clips = marker.state.model.animations;
 
             this.add(gltf.scene);
-            this.scale.set(10,10,10);
+            this.scale.set(10, 10, 10);
             gltf.scene.rotation.x = Math.PI; // Rotations are in radians.
             // this.translateX(2);
             console.log("marker loaded");
@@ -72,7 +67,11 @@ class Marker extends Group {
         // });
 
         // Add self to parent's update list
-        parent.addToUpdateList(this);
+        // parent.addToUpdateList(this);
+    }
+
+    update() {
+        this.rotation.z -= 0.05;
     }
 }
 

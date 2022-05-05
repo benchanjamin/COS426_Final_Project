@@ -4,14 +4,14 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as Dat from 'dat.gui';
 
 class Fox extends Group {
-    constructor(parent) {
+    constructor(parent, isAdversary=false) {
         // Call parent Group() constructor
         super();
 
         // Init state
         this.state = {
-            gui: new Dat.GUI(),
-            name: null,
+            // gui: new Dat.GUI(),
+            name: '',
             model: null,
             animation: null,
             mixer: null,
@@ -23,7 +23,7 @@ class Fox extends Group {
         };
 
         let state = this.state;
-        state.name = 'fox';
+        // state.name = 'fox';
         let gui = this.state.gui;
 
         let fox = this;
@@ -39,13 +39,13 @@ class Fox extends Group {
             this.add(gltf.scene);
             this.scale.set(.05,.05,.05);
             // this.translateX(2);
-            console.log("loaded");
+            console.log("fox loaded");
         });
 
-        gui.add(state, 'action', [ 'Walk', 'Run', 'Survey'] ).onChange(function (value) {
-            state.mixer.stopAllAction();
-            state.action = value;
-        });
+        // gui.add(state, 'action', [ 'Walk', 'Run', 'Survey'] ).onChange(function (value) {
+        //     state.mixer.stopAllAction();
+        //     state.action = value;
+        // });
 
 
         document.addEventListener('keydown', function(event){
@@ -63,14 +63,16 @@ class Fox extends Group {
             }
         });
 
-        document.addEventListener('keyup', function(event){
-            if (event.code == 'ArrowUp')
-                state.mixer.stopAllAction();
-            state.action = "Survey"
-            if (event.code == 'ArrowDown')
-                state.mixer.stopAllAction();
-            state.action = "Survey"
-        });
+        if (!isAdversary) {
+            document.addEventListener('keyup', function (event) {
+                if (event.code == 'ArrowUp')
+                    state.mixer.stopAllAction();
+                state.action = "Survey"
+                if (event.code == 'ArrowDown')
+                    state.mixer.stopAllAction();
+                state.action = "Survey"
+            });
+        }
 
 
         /*gui.add(state, 'speed', [0], [5] ).onChange(function (value) {

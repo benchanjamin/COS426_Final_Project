@@ -104,6 +104,13 @@ function initMap() {
 
         mainCharacter = helperFunctions.spawnMainCharacter(overlay)
 
+        for (let i = 0; i < 30; i++) {
+            setTimeout(function () {
+                helperFunctions.spawnAdversaryCharacter(overlay)
+            }, i / 60 * 1000);
+
+        }
+
         map.addListener('mousemove', ev => {
             const {domEvent} = ev;
             const {left, top, width, height} = mapDiv.getBoundingClientRect();
@@ -115,6 +122,7 @@ function initMap() {
             // we have to make sure that it will be called for the next frame.
             overlay.requestRedraw();
         });
+
         document.addEventListener('keydown', function (event) {
             const amountTilt = 10;
             const amountRotate = 10;
@@ -132,7 +140,7 @@ function initMap() {
                     map.setCenter(setLatLng);
                 }
                 adjustMap("rotate", -amountRotate);
-                mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
+                // mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
             }
             if (event.code == 'ArrowRight') {
                 let mapCenterVector3 = new Vector3();
@@ -147,48 +155,73 @@ function initMap() {
                     map.setCenter(setLatLng);
                 }
                 adjustMap("rotate", amountRotate);
-                mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
+                // mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
             }
             if (event.code == 'ArrowDown' && !event.shiftKey) {
                 let mapCenterVector3 = new Vector3();
+                let setLatLng = {
+                    lat: 0,
+                    lng: 0,
+                    altitude: 0
+                };
                 overlay.latLngAltToVector3({lat: map.getCenter().lat(), lng: map.getCenter().lng()}, mapCenterVector3);
                 if (Math.abs((mapCenterVector3.x - mainCharacter.position.x) ** 2 + (mapCenterVector3.y - mainCharacter.position.y) ** 2) > 0) {
-                    let setLatLng = {
-                        lat: 0,
-                        lng: 0,
-                        altitude: 0
-                    };
+
                     overlay.vector3ToLatLngAlt(mainCharacter.position, setLatLng)
                     map.setCenter(setLatLng);
                 }
                 mainCharacter.state.action = "Run";
                 adjustMap("move", -amountMoveInKM);
+                let targetPosition = new Vector3();
                 overlay.latLngAltToVector3({
                     lat: map.getCenter().lat(),
                     lng: map.getCenter().lng(),
                     altitude: 0
-                }, mainCharacter.position);
+                }, targetPosition);
+
+                let differenceVector = targetPosition.sub(mainCharacter.position);
+                let blender = 1 / 60.0;
+                let towardMove = differenceVector.multiplyScalar(blender)
+
+                for (let i = 1; i <= 60; i++) {
+
+                    setTimeout(function () {
+                        mainCharacter.position.add(towardMove)
+                    }, i / 40 * 500);
+                }
                 mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading());
             }
             if (event.code == 'ArrowUp' && !event.shiftKey) {
                 let mapCenterVector3 = new Vector3();
+                let setLatLngAlt = {
+                    lat: 0,
+                    lng: 0,
+                    altitude: 0
+                };
                 overlay.latLngAltToVector3({lat: map.getCenter().lat(), lng: map.getCenter().lng()}, mapCenterVector3);
                 if (Math.abs((mapCenterVector3.x - mainCharacter.position.x) ** 2 + (mapCenterVector3.y - mainCharacter.position.y) ** 2) > 0) {
-                    let setLatLngAlt = {
-                        lat: 0,
-                        lng: 0,
-                        altitude: 0
-                    };
                     overlay.vector3ToLatLngAlt(mainCharacter.position, setLatLngAlt)
                     map.setCenter(setLatLngAlt);
                 }
                 mainCharacter.state.action = "Run";
                 adjustMap("move", amountMoveInKM);
+                let targetPosition = new Vector3();
                 overlay.latLngAltToVector3({
                     lat: map.getCenter().lat(),
                     lng: map.getCenter().lng(),
                     altitude: 0
-                }, mainCharacter.position);
+                }, targetPosition);
+
+                let differenceVector = targetPosition.sub(mainCharacter.position);
+                let blender = 1 / 60.0;
+                let towardMove = differenceVector.multiplyScalar(blender)
+
+                for (let i = 1; i <= 60; i++) {
+                    setTimeout(function () {
+                        mainCharacter.position.add(towardMove)
+                    }, i / 60 * 500);
+
+                }
                 mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() - 180);
             }
             if (event.code == 'ArrowDown' && event.shiftKey) {
@@ -207,10 +240,6 @@ function initMap() {
                     map.setHeading(map.getHeading() + amount);
                     break;
                 case "move":
-                    // lat2 = asin(sin(lat1)*cos(d/R) + cos(lat1)*sin(d/R)*cos(θ))
-                    //
-                    // lon2 = lon1 + atan2(sin(θ)*sin(d/R)*cos(lat1), cos(d/R)−sin(lat1)*sin(lat2))
-                    // map.panBy(0, amount);
                     const R = 6378.1
                     let previousLat = helperFunctions.degrees_to_radians(map.getCenter().lat());
                     let previousLng = helperFunctions.degrees_to_radians(map.getCenter().lng());
@@ -224,12 +253,6 @@ function initMap() {
                         lat: helperFunctions.radians_to_degrees(newLat),
                         lng: helperFunctions.radians_to_degrees(newLng)
                     });
-
-                    // console.log(map.getCenter().lat())
-                    // console.log(helperFunctions.radians_to_degrees(newLat), helperFunctions.radians_to_degrees(newLng))
-                    // console.log( Math.sin(helperFunctions.degrees_to_radians((-map.getHeading() + 90)))**2 + Math.cos(helperFunctions.degrees_to_radians((-map.getHeading() + 90)))**2);
-                    // console.log(map.getCenter().lat() + amount *
-                    //                             Math.sin(helperFunctions.degrees_to_radians(-map.getHeading() - 90)));
                     break;
                 default:
                     break;
@@ -269,7 +292,15 @@ function initMap() {
         if (intersections.length === 0)
             return;
         highlightedObject = intersections[0].object;
-        highlightedObject.material.color.setHex(HIGHLIGHT_COLOR);
+        if (highlightedObject) {
+            console.log(highlightedObject.name);
+        }
+        if (highlightedObject.userData.name === 'adversary') {
+            highlightedObject.material.color.setHex(HIGHLIGHT_COLOR);
+        }
+
+        // highlightedObject = intersections[0].object;
+        // highlightedObject.material.color.setHex(HIGHLIGHT_COLOR);
 
 
     };
@@ -292,6 +323,8 @@ class helperFunctions {
     static spawnMainCharacter(overlay) {
         const scene = overlay.getScene();
         let mainCharacter = new Fox(window);
+        mainCharacter.userData.name = 'mainCharacter'
+
         const mainCharacterLocation = {...window.VIEW_PARAMS.center, altitude: 0};
         mainCharacter.scale.set(0.5, 0.5, 0.5);
         mainCharacter.rotation.x = (helperFunctions.degrees_to_radians(90));
