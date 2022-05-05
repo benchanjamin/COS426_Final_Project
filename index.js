@@ -285,6 +285,7 @@ function initMap() {
 
         if (animationRunning) {
             console.log(mainCharacter.group.position);
+            console.log(mainCharacter.params);
             for (const obj of this.state.updateList) {
                 if (typeof obj.update !== 'undefined') {
                     obj.update();
@@ -346,6 +347,7 @@ class helperFunctions {
         // mainCharacter.scale.set(10000, 100000, 10000);
         mainCharacter.group.rotation.x = (helperFunctions.degrees_to_radians(90));
         mainCharacter.group.rotation.y = helperFunctions.degrees_to_radians(-180);
+        overlay.latLngAltToVector3(mainCharacterLocation, mainCharacter.group.position);
         overlay.latLngAltToVector3(mainCharacterLocation, mainCharacter.group.position);
         scene.add(mainCharacter);
 

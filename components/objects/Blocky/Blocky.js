@@ -416,7 +416,7 @@ class Blocky extends Group {
     }
 
     bounce() {
-        this.group.position.y = this.position.y;
+        // this.group.position.y = this.position.y;
         this.arms.forEach((arm, index) => {
             const m = index % 2 === 0 ? 1 : -1
             arm.rotation.z = this.params.armRotation * m;
@@ -428,7 +428,7 @@ class Blocky extends Group {
     };
 
     walk() {
-        this.group.position.y = this.params.y;
+        // this.group.position.y = this.params.y;
         this.legs.forEach((leg, index) => {
             const m = index % 2 === 0 ? 1 : -1
             leg.rotation.x = this.params.legRotation * m;
@@ -441,7 +441,7 @@ class Blocky extends Group {
     };
 
     run() {
-        this.group.position.y = this.params.y;
+        // this.group.position.y = this.params.y;
         this.legs.forEach((leg, index) => {
             const m = index % 2 === 0 ? 1 : -1
             leg.rotation.x = this.params.legRotation * m - 0.2;
@@ -454,7 +454,7 @@ class Blocky extends Group {
     };
 
     dance() {
-        this.group.position.y = this.params.y;
+        // this.group.position.y = this.params.y;
         this.legs.forEach((leg, index) => {
             const m = index % 2 === 0 ? 1 : 0
             leg.rotation.z = this.params.legRotation + degreesToRadians(60) * m;
@@ -513,14 +513,10 @@ class Blocky extends Group {
                 arm.rotation.z = .1 * m;
             });
             gsap.set(this.params, {
-                // y: .1,
-                z: 0.1,
                 legRotation: degreesToRadians(-30),
                 armRotation: degreesToRadians(20),
             });
             gsap.to(this.params, {
-                // y: 0,
-                z: 0,
                 repeat: -1,
                 duration: 0.25,
                 yoyo: true
