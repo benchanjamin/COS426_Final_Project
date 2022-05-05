@@ -118,13 +118,37 @@ function initMap() {
         document.addEventListener('keydown', function (event) {
             const amountTilt = 10;
             const amountRotate = 10;
-            const amountMove = 10;
-            if (event.code == 'ArrowLeft')
+            const amountMoveInKM = 0.005;
+            if (event.code == 'ArrowLeft') {
+                let mapCenterVector3 = new Vector3();
+                overlay.latLngAltToVector3({lat: map.getCenter().lat(), lng: map.getCenter().lng()}, mapCenterVector3);
+                if (Math.abs((mapCenterVector3.x - mainCharacter.position.x) ** 2 + (mapCenterVector3.y - mainCharacter.position.y) ** 2) > 0) {
+                    let setLatLng = {
+                        lat: 0,
+                        lng: 0,
+                        altitude: 0
+                    };
+                    overlay.vector3ToLatLngAlt(mainCharacter.position, setLatLng)
+                    map.setCenter(setLatLng);
+                }
                 adjustMap("rotate", -amountRotate);
-            mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
-            if (event.code == 'ArrowRight')
+                mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
+            }
+            if (event.code == 'ArrowRight') {
+                let mapCenterVector3 = new Vector3();
+                overlay.latLngAltToVector3({lat: map.getCenter().lat(), lng: map.getCenter().lng()}, mapCenterVector3);
+                if (Math.abs((mapCenterVector3.x - mainCharacter.position.x) ** 2 + (mapCenterVector3.y - mainCharacter.position.y) ** 2) > 0) {
+                    let setLatLng = {
+                        lat: 0,
+                        lng: 0,
+                        altitude: 0
+                    };
+                    overlay.vector3ToLatLngAlt(mainCharacter.position, setLatLng)
+                    map.setCenter(setLatLng);
+                }
                 adjustMap("rotate", amountRotate);
-            mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
+                mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading() + 180);
+            }
             if (event.code == 'ArrowDown' && !event.shiftKey) {
                 let mapCenterVector3 = new Vector3();
                 overlay.latLngAltToVector3({lat: map.getCenter().lat(), lng: map.getCenter().lng()}, mapCenterVector3);
@@ -138,14 +162,13 @@ function initMap() {
                     map.setCenter(setLatLng);
                 }
                 mainCharacter.state.action = "Run";
-                adjustMap("move", amountMove);
+                adjustMap("move", -amountMoveInKM);
                 overlay.latLngAltToVector3({
                     lat: map.getCenter().lat(),
                     lng: map.getCenter().lng(),
                     altitude: 0
                 }, mainCharacter.position);
                 mainCharacter.rotation.y = helperFunctions.degrees_to_radians(-map.getHeading());
-                // mainCharacter.translateX(-4);
             }
             if (event.code == 'ArrowUp' && !event.shiftKey) {
                 let mapCenterVector3 = new Vector3();
@@ -160,7 +183,7 @@ function initMap() {
                     map.setCenter(setLatLngAlt);
                 }
                 mainCharacter.state.action = "Run";
-                adjustMap("move", -amountMove);
+                adjustMap("move", amountMoveInKM);
                 overlay.latLngAltToVector3({
                     lat: map.getCenter().lat(),
                     lng: map.getCenter().lng(),
@@ -184,13 +207,26 @@ function initMap() {
                     map.setHeading(map.getHeading() + amount);
                     break;
                 case "move":
-                    map.panBy(0, amount);
-                    // map.panTo({
-                    //     lat: map.getCenter().lat() + -amount *
-                    //         Math.sin(helperFunctions.degrees_to_radians((-map.getHeading() + 90))),
-                    //     lng: map.getCenter().lng() + -amount *
-                    //         Math.cos(helperFunctions.degrees_to_radians((-map.getHeading() + 90)))
-                    // });
+                    // lat2 = asin(sin(lat1)*cos(d/R) + cos(lat1)*sin(d/R)*cos(θ))
+                    //
+                    // lon2 = lon1 + atan2(sin(θ)*sin(d/R)*cos(lat1), cos(d/R)−sin(lat1)*sin(lat2))
+                    // map.panBy(0, amount);
+                    const R = 6378.1
+                    let previousLat = helperFunctions.degrees_to_radians(map.getCenter().lat());
+                    let previousLng = helperFunctions.degrees_to_radians(map.getCenter().lng());
+                    let bearing = helperFunctions.degrees_to_radians(map.getHeading());
+                    let newLat = Math.asin(Math.sin(previousLat) * Math.cos(amount / R) +
+                        Math.cos(previousLat) * Math.sin(amount / R) * Math.cos(bearing))
+                    let newLng = previousLng + Math.atan2(Math.sin(bearing) * Math.sin(amount / R) *
+                        Math.cos(previousLat),
+                        Math.cos(amount / R) - Math.sin(previousLat) * Math.sin(newLat))
+                    map.panTo({
+                        lat: helperFunctions.radians_to_degrees(newLat),
+                        lng: helperFunctions.radians_to_degrees(newLng)
+                    });
+
+                    // console.log(map.getCenter().lat())
+                    // console.log(helperFunctions.radians_to_degrees(newLat), helperFunctions.radians_to_degrees(newLng))
                     // console.log( Math.sin(helperFunctions.degrees_to_radians((-map.getHeading() + 90)))**2 + Math.cos(helperFunctions.degrees_to_radians((-map.getHeading() + 90)))**2);
                     // console.log(map.getCenter().lat() + amount *
                     //                             Math.sin(helperFunctions.degrees_to_radians(-map.getHeading() - 90)));
@@ -246,6 +282,11 @@ class helperFunctions {
     static degrees_to_radians(degrees) {
         let pi = Math.PI;
         return degrees * (pi / 180);
+    }
+
+    static radians_to_degrees(radians) {
+        let pi = Math.PI;
+        return radians * (180 / pi);
     }
 
     static spawnMainCharacter(overlay) {
